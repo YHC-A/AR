@@ -26,6 +26,9 @@ int data = 1;
 double distance1;
 double distance2;
 
+double ANG1;
+double ANG2;
+
 void setup() {
   Serial.begin(9600);
   /*
@@ -58,7 +61,7 @@ void setup() {
   digitalWrite(bs, LOW);
 }
 
-unsigned long ping1() {
+double ping1() {
     digitalWrite(trigPin1,HIGH) ; //觸發腳位設定為高電位
     delayMicroseconds(10);   //持續5微秒
     digitalWrite(trigPin1,LOW) ;
@@ -69,7 +72,7 @@ unsigned long ping1() {
 }
 
 
-unsigned long ping2() {
+double ping2() {
     digitalWrite(trigPin2,HIGH) ; //觸發腳位設定為高電位
     delayMicroseconds(10);   //持續5微秒
     digitalWrite(trigPin2,LOW) ;
@@ -88,7 +91,7 @@ void loop() {
     Serial.println(str1) ;
     
     //  控制馬達的轉動方式放在這
-    if (distance1 <= 100  ||  distance2 <= 100){
+    if (distance1 <= 50  ||  distance2 <= 50){
         digitalWrite (af, LOW);
         digitalWrite (bf, LOW);
     } else {
