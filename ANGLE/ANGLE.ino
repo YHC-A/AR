@@ -1,23 +1,39 @@
-void setup() {
+double distance1 = 100;
+double distance2 = 96;
+double distance3;
+double trigBetween = 10;
+double wheelBetween = 60;
+int T_Catch_up = 2;
+
+//  以上單位為 cm, sec
+
+int angle_date(float x, float y){
   Serial.begin(9600);
   
-  double distance1 = 38;
-  double distance2 = 40;
-  float trigBetween = 4.5;
+  double ANG1 = acos((pow(distance1, 2) + pow(trigBetween, 2) - pow(distance2, 2)) / (2 * distance1 * trigBetween)) * 180 / PI ;
+  double ANG2 = acos((pow(distance2, 2) + pow(trigBetween, 2) - pow(distance1, 2)) / (2 * distance2 * trigBetween)) * 180 / PI ;
+
+  distance3 = sqrt(pow(distance2, 2) + pow((trigBetween / 2), 2) - 2 * distance2 * (trigBetween / 2) * cos(ANG2 / 180 * PI));
+
+  double ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(distance1, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
+  if (ANG3 >= 90){
+      ANG3 = ANG3 - 90;
+  } else{
+      ANG3 = 90 - ANG3;
+  }
+
   
-  double ANG1 = acos((distance1 * distance1 + trigBetween * trigBetween - distance2 * distance2) / (2 * distance1 * trigBetween)) * 180 / PI ;
-  double ANG2 = acos((distance2 * distance2 + trigBetween * trigBetween - distance1 * distance1) / (2 * distance2 * trigBetween)) * 180 / PI ;
-  double ANG3 = acos((distance1 * distance1 + distance2 * distance2 - trigBetween * trigBetween) / (2 * distance2 * distance1)) * 180 / PI ;
+  Serial.println("角度1(L) = " + String(ANG1)); 
+  Serial.println("角度2(R) = " + String(ANG2));
+  Serial.println("角度3(target, 單位 : 度) = " + String(ANG3));
+  Serial.println("distance3(target, 單位 : cm) = " + String(distance3));
   
-  /*
-  float deg=30;
-  float rad=deg*PI/180;
-  float x = sin(rad);
-  */
   
-  Serial.println(ANG1);  //輸出 0.50
-  Serial.println(ANG2);
-  Serial.println(ANG3);
+}
+
+
+void setup() {
+  angle_date(distance1, distance2);
   
   }
 void loop() {
