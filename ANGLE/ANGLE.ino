@@ -2,7 +2,7 @@ double distance1 = 100;
 double distance2 = 96;
 //  以上單位為 cm, sec
 
-int angle_date(float x, float y){
+int angle_data(float x, float y){
 
   double trigBetween = 10;
   double wheelBetween = 60;
@@ -43,7 +43,7 @@ int angle_date(float x, float y){
 
 
 void setup() {
-  angle_date(distance1, distance2);
+  angle_data(distance1, distance2);
   
   }
 void loop() {
