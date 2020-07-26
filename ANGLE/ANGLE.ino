@@ -43,8 +43,9 @@ int angle_data(float x, float y){
 
 
 void setup() {
+  double ANG3;
   angle_data(distance1, distance2);
-  
+  Serial.println(ANG3);
   }
 void loop() {
   

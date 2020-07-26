@@ -24,9 +24,22 @@ int data = 1;
 
 double distance1;
 double distance2;
+double distance3;
 
 double ANG1;
 double ANG2;
+double ANG3;
+
+double trigBetween = 10;
+double wheelBetween = 60;
+int T_Catch_up = 2;
+
+float V0;
+float V1_plus;
+float V2_plus;
+
+int Pa;
+int Pb;
 
 //-----------------------------SetUpIsHere--------------------------------------------------------------
 void setup() {
@@ -82,21 +95,16 @@ double ping2() {
     }  else return  (distance2);
 }
 
-int angle_data(float x, float y){
-
-    double trigBetween = 10;
-    double wheelBetween = 60;
-    int T_Catch_up = 2;
-    double distance3;
+double angle_data(float x, float y){
   
     Serial.begin(9600);
   
-    double ANG1 = acos((pow(distance1, 2) + pow(trigBetween, 2) - pow(distance2, 2)) / (2 * distance1 * trigBetween)) * 180 / PI ;
-    double ANG2 = acos((pow(distance2, 2) + pow(trigBetween, 2) - pow(distance1, 2)) / (2 * distance2 * trigBetween)) * 180 / PI ;
+    ANG1 = acos((pow(distance1, 2) + pow(trigBetween, 2) - pow(distance2, 2)) / (2 * distance1 * trigBetween)) * 180 / PI ;
+    ANG2 = acos((pow(distance2, 2) + pow(trigBetween, 2) - pow(distance1, 2)) / (2 * distance2 * trigBetween)) * 180 / PI ;
 
     distance3 = sqrt(pow(distance2, 2) + pow((trigBetween / 2), 2) - 2 * distance2 * (trigBetween / 2) * cos(ANG2 / 180 * PI));
 
-    double ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(distance1, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
+    ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(distance1, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
     if (ANG3 >= 90){
         ANG3 = ANG3 - 90;
     } else{
@@ -113,22 +121,44 @@ int angle_data(float x, float y){
 
     Serial.println("轉速 = " + String(omega) + "rad/s");
 
-    float V1_plus = omega * wheelBetween / 2;
-    float V2_plus = omega * wheelBetween / 2 * (-1);
+    V1_plus = omega * wheelBetween / 2;
+    V2_plus = omega * wheelBetween / 2 * (-1);
 
     Serial.println(V1_plus);
     Serial.println(V2_plus);
 
     // 這邊要用pwma, pwmb 算出初始速度，上面的初始值設定為60，找出速度對pwm的關係，藉此可知初始速度V_01, V_02
     // 接著用return 回傳V_plus + V0，藉此算出兩輪車速。
+}
+
+double Speed_Cal(){
+  
+    V0 = distance3 / T_Catch_up;
+    
+    float V1 = V0 + V1_plus;
+    float V2 = V0 + V2_plus;
+    Serial.println("V1 = " + String(V1));
+    Serial.println("V2 = " + String(V2));
+
+    Pa = V1 * 5;
+    Pb = V2 * 5;
+    if (Pa > 255){
+        Pa = 255;
+    }
+    if (Pb > 255){
+        Pb = 255;
+    }
+    Serial.println("Pa = " + String(Pa));
+    Serial.println("Pb = " + String(Pb));
+
+    analogWrite(pwma, Pa);
+    analogWrite(pwmb, Pb);    
 
 }
   
 //-----------------------------LoopIsHere----------------------------------------------------------------
 
 void loop() {
-
-
     
     String str1 ="";
     distance1  = ping1()  ;
@@ -148,9 +178,9 @@ void loop() {
         digitalWrite (bf, HIGH);
         
         angle_data(distance1, distance2);
+        Speed_Cal();
         
       }
-
 
     delay(100) ;
 }
