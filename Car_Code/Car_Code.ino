@@ -99,23 +99,23 @@ double angle_data(float x, float y){
   
     Serial.begin(9600);
   
-    ANG1 = acos((pow(distance1, 2) + pow(trigBetween, 2) - pow(distance2, 2)) / (2 * distance1 * trigBetween)) * 180 / PI ;
-    ANG2 = acos((pow(distance2, 2) + pow(trigBetween, 2) - pow(distance1, 2)) / (2 * distance2 * trigBetween)) * 180 / PI ;
+    ANG1 = acos((pow(x, 2) + pow(trigBetween, 2) - pow(y, 2)) / (2 * x * trigBetween)) * 180 / PI ;
+    ANG2 = acos((pow(y, 2) + pow(trigBetween, 2) - pow(x, 2)) / (2 * y * trigBetween)) * 180 / PI ;
 
-    distance3 = sqrt(pow(distance2, 2) + pow((trigBetween / 2), 2) - 2 * distance2 * (trigBetween / 2) * cos(ANG2 / 180 * PI));
+    distance3 = sqrt(pow(y, 2) + pow((trigBetween / 2), 2) - 2 * y * (trigBetween / 2) * cos(ANG2 / 180 * PI));
 
-    ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(distance1, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
+    ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(x, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
+    
     if (ANG3 >= 90){
         ANG3 = ANG3 - 90;
     } else{
         ANG3 = 90 - ANG3;
     }
 
-  
     Serial.println("角度1(L) = " + String(ANG1)); 
     Serial.println("角度2(R) = " + String(ANG2));
-    Serial.println("角度3(target, 單位 : 度) = " + String(ANG3));
-    Serial.println("distance3(target, 單位 : cm) = " + String(distance3));
+    Serial.println("角度3(target) = " + String(ANG3) + " 度");
+    Serial.println("distance3(target) = " + String(distance3) + " (cm)");
 
     float omega = ANG3 * PI / 180 / T_Catch_up;
 
@@ -124,13 +124,13 @@ double angle_data(float x, float y){
     V1_plus = omega * wheelBetween / 2;
     V2_plus = omega * wheelBetween / 2 * (-1);
 
-    Serial.println(V1_plus);
-    Serial.println(V2_plus);
+    Serial.println("V1_plus = " + String(V1_plus) + "(cm/s)");
+    Serial.println("V2_plus = " + String(V2_plus) + "(cm/s)");
 
+}
     // 這邊要用pwma, pwmb 算出初始速度，上面的初始值設定為60，找出速度對pwm的關係，藉此可知初始速度V_01, V_02
     // 接著用return 回傳V_plus + V0，藉此算出兩輪車速。
-}
-
+    
 double Speed_Cal(){
   
     V0 = distance3 / T_Catch_up;
@@ -140,6 +140,9 @@ double Speed_Cal(){
     Serial.println("V1 = " + String(V1));
     Serial.println("V2 = " + String(V2));
 
+
+    //  5是速度換PWM值得係數，此係數還待更加精準的測量
+    
     Pa = V1 * 5;
     Pb = V2 * 5;
     if (Pa > 255){
@@ -182,5 +185,5 @@ void loop() {
         
       }
 
-    delay(100) ;
+    delay(500) ;
 }

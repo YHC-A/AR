@@ -11,12 +11,12 @@ int angle_data(float x, float y){
   
   Serial.begin(9600);
   
-  double ANG1 = acos((pow(distance1, 2) + pow(trigBetween, 2) - pow(distance2, 2)) / (2 * distance1 * trigBetween)) * 180 / PI ;
-  double ANG2 = acos((pow(distance2, 2) + pow(trigBetween, 2) - pow(distance1, 2)) / (2 * distance2 * trigBetween)) * 180 / PI ;
+  double ANG1 = acos((pow(x, 2) + pow(trigBetween, 2) - pow(y, 2)) / (2 * x * trigBetween)) * 180 / PI ;
+  double ANG2 = acos((pow(y, 2) + pow(trigBetween, 2) - pow(x, 2)) / (2 * y * trigBetween)) * 180 / PI ;
 
-  distance3 = sqrt(pow(distance2, 2) + pow((trigBetween / 2), 2) - 2 * distance2 * (trigBetween / 2) * cos(ANG2 / 180 * PI));
+  distance3 = sqrt(pow(y, 2) + pow((trigBetween / 2), 2) - 2 * y * (trigBetween / 2) * cos(ANG2 / 180 * PI));
 
-  double ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(distance1, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
+  double ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(x, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
   if (ANG3 >= 90){
       ANG3 = ANG3 - 90;
   } else{
@@ -36,16 +36,16 @@ int angle_data(float x, float y){
   float V1_plus = omega * wheelBetween / 2;
   float V2_plus = omega * wheelBetween / 2 * (-1);
 
-  Serial.println(V1_plus);
-  Serial.println(V2_plus);
-
+  Serial.println("V1_plus = " + String(V1_plus));
+  Serial.println("V2_plus = " + String(V2_plus));
+  Serial.println("-------------------------------");
 }
 
 
 void setup() {
-  double ANG3;
+  
   angle_data(distance1, distance2);
-  Serial.println(ANG3);
+  
   }
 void loop() {
   
