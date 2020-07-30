@@ -134,6 +134,7 @@ double angle_data(float x, float y){
 double Speed_Cal(){
   
     V0 = distance3 / T_Catch_up;
+    int speed_pwm_coeiff = 5;
     
     float V1 = V0 + V1_plus;
     float V2 = V0 + V2_plus;
@@ -143,8 +144,8 @@ double Speed_Cal(){
 
     //  5是速度換PWM值得係數，此係數還待更加精準的測量
     
-    Pa = V1 * 5;
-    Pb = V2 * 5;
+    Pa = V1 * speed_pwm_coeiff;
+    Pb = V2 * speed_pwm_coeiff;
     if (Pa > 255){
         Pa = 255;
     }

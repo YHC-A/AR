@@ -1,10 +1,12 @@
-double distance3 = 100;
+
 int T_Catch_up = 2;
-float V1_plus = 7;
-float V2_plus = -7;
+
 
 double Speed_Cal(){
-  
+    int SpeedToPwm = 5;
+    double distance3 = random(0, 150);
+    float V1_plus = random(-10, 10);
+    float V2_plus = V1_plus * (-1);
     float V0 = distance3 / T_Catch_up;
     
     float V1 = V0 + V1_plus;
@@ -12,8 +14,8 @@ double Speed_Cal(){
     Serial.println("V1 = " + String(V1));
     Serial.println("V2 = " + String(V2));
 
-    int Pa = V1 * 5;
-    int Pb = V2 * 5;
+    int Pa = V1 * SpeedToPwm;
+    int Pb = V2 * SpeedToPwm;
     if (Pa > 255){
         Pa = 255;
     }
@@ -33,5 +35,5 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+    Speed_Cal();
 }
