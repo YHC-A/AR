@@ -1,15 +1,15 @@
-const int trigPin1 = 37;
-const int echoPin1 = 35;
-const int trigPin2 = 26;
-const int echoPin2 = 28;
+const int trigPin1 = 22;
+const int echoPin1 = 24;
+const int trigPin2 = 8;
+const int echoPin2 = 9;
 
-const int trigPin3 = 8;
-const int echoPin3 = 9;
+const int trigPin3 = 37;
+const int echoPin3 = 35;
 const int trigPin4 = 42;
 const int echoPin4 = 40;
 
-//  const int trig[4] = {37, 26, 8, 42};
-//  const int echo[4] = {35, 28, 9, 40};
+//  const int trig[4] = {37, 22, 8, 42};
+//  const int echo[4] = {35, 24, 9, 40};
 
 int af = 13;
 int as = 12;
@@ -31,7 +31,7 @@ double ANG2;
 double ANG3;
 
 double trigBetween = 10;
-double wheelBetween = 60;
+double wheelBetween = 50;
 int T_Catch_up = 2;
 
 float V0;
@@ -80,7 +80,7 @@ double ping1() {
     digitalWrite(trigPin1,LOW) ;
     distance1 = pulseIn(echoPin1,HIGH)/58;
     if (distance1 >= 250){
-      return 0  ;  // 換算成 cm 並傳回
+      return 250  ;  // 換算成 cm 並傳回
     }  else return  (distance1);
 }
 
@@ -91,7 +91,7 @@ double ping2() {
     digitalWrite(trigPin2,LOW) ;
     distance2 = pulseIn(echoPin2,HIGH)/58;
     if (distance2 >= 250){
-      return 0  ;  // 換算成 cm 並傳回
+      return 250  ;  // 換算成 cm 並傳回
     }  else return  (distance2);
 }
 
@@ -132,9 +132,9 @@ double angle_data(float x, float y){
     // 接著用return 回傳V_plus + V0，藉此算出兩輪車速。
     
 double Speed_Cal(){
-  
+
+    int VToPwm = 3;
     V0 = distance3 / T_Catch_up;
-    int speed_pwm_coeiff = 5;
     
     float V1 = V0 + V1_plus;
     float V2 = V0 + V2_plus;
@@ -144,8 +144,8 @@ double Speed_Cal(){
 
     //  5是速度換PWM值得係數，此係數還待更加精準的測量
     
-    Pa = V1 * speed_pwm_coeiff;
-    Pb = V2 * speed_pwm_coeiff;
+    Pa = V1 * VToPwm;
+    Pb = V2 * VToPwm;
     if (Pa > 255){
         Pa = 255;
     }
@@ -175,6 +175,7 @@ void loop() {
       
         digitalWrite (af, LOW);
         digitalWrite (bf, LOW);
+        Serial.println("Stop");
     
     } else {
       
