@@ -30,7 +30,7 @@ double ANG1;
 double ANG2;
 double ANG3;
 
-double trigBetween = 20;
+double trigBetween = 10;
 double wheelBetween = 50;
 int T_Catch_up = 2;
 
@@ -98,21 +98,24 @@ double ping2() {
 double angle_data(float x, float y){
   
     Serial.begin(9600);
-    float omega;
-    
+  
     ANG1 = acos((pow(x, 2) + pow(trigBetween, 2) - pow(y, 2)) / (2 * x * trigBetween)) * 180 / PI ;
     ANG2 = acos((pow(y, 2) + pow(trigBetween, 2) - pow(x, 2)) / (2 * y * trigBetween)) * 180 / PI ;
 
     distance3 = sqrt(pow(y, 2) + pow((trigBetween / 2), 2) - 2 * y * (trigBetween / 2) * cos(ANG2 / 180 * PI));
 
     ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(x, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
+
+    Serial.println("ANG3(未修正) = " + String(ANG3));
+    
+    float omega;
     
     if (ANG3 >= 90){
         ANG3 = ANG3 - 90;
         omega = ANG3 * PI / 180 / T_Catch_up;
     } else{
         ANG3 = 90 - ANG3;
-        omega = ANG3 * PI / 180 / T_Catch_up * (-1);
+        omega = ANG3 * PI / 180 / T_Catch_up *　(-1);
     }
 
     Serial.println("角度1(L) = " + String(ANG1)); 
@@ -143,7 +146,7 @@ double Speed_Cal(){
     Serial.println("V2 = " + String(V2));
 
 
-    //  5是速度換PWM值得係數，此係數還待更加精準的測量
+    //  VToPwm是速度換PWM值得係數，此係數還待更加精準的測量
     
     Pa = V2 * VToPwm;
     Pb = V1 * VToPwm;
@@ -174,7 +177,7 @@ void loop() {
     //  控制馬達的轉動方式放在這
     if (distance1 <= 50  ||  distance2 <= 50){
       
-        digitalWrite (af, LOW);
+        digitalWrite (af, LOW); 
         digitalWrite (bf, LOW);
         Serial.println("Stop");
     
@@ -188,5 +191,5 @@ void loop() {
         
       }
 
-    delay(200) ;
+    delay(500) ;
 }
