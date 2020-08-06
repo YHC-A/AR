@@ -30,7 +30,7 @@ double ANG1;
 double ANG2;
 double ANG3;
 
-double trigBetween = 10;
+double trigBetween = 20;
 double wheelBetween = 50;
 int T_Catch_up = 2;
 
@@ -78,9 +78,9 @@ double ping1() {
     digitalWrite(trigPin1,HIGH) ; //觸發腳位設定為高電位
     delayMicroseconds(10);   //持續5微秒
     digitalWrite(trigPin1,LOW) ;
-    distance1 = pulseIn(echoPin1,HIGH)/58;
-    if (distance1 >= 250){
-      return 250  ;  // 換算成 cm 並傳回
+    distance1 = pulseIn(echoPin1,HIGH) / 58.0;
+    if (distance1 >= 350){
+      return 350  ;  // 換算成 cm 並傳回
     }  else return  (distance1);
 }
 
@@ -89,16 +89,17 @@ double ping2() {
     digitalWrite(trigPin2,HIGH) ; //觸發腳位設定為高電位
     delayMicroseconds(10);   //持續5微秒
     digitalWrite(trigPin2,LOW) ;
-    distance2 = pulseIn(echoPin2,HIGH)/58;
-    if (distance2 >= 250){
-      return 250  ;  // 換算成 cm 並傳回
+    distance2 = pulseIn(echoPin2,HIGH) / 58.0;
+    if (distance2 >= 350){
+      return 350  ;  // 換算成 cm 並傳回
     }  else return  (distance2);
 }
 
 double angle_data(float x, float y){
   
     Serial.begin(9600);
-  
+    float omega;
+    
     ANG1 = acos((pow(x, 2) + pow(trigBetween, 2) - pow(y, 2)) / (2 * x * trigBetween)) * 180 / PI ;
     ANG2 = acos((pow(y, 2) + pow(trigBetween, 2) - pow(x, 2)) / (2 * y * trigBetween)) * 180 / PI ;
 
@@ -108,16 +109,16 @@ double angle_data(float x, float y){
     
     if (ANG3 >= 90){
         ANG3 = ANG3 - 90;
+        omega = ANG3 * PI / 180 / T_Catch_up;
     } else{
         ANG3 = 90 - ANG3;
+        omega = ANG3 * PI / 180 / T_Catch_up * (-1);
     }
 
     Serial.println("角度1(L) = " + String(ANG1)); 
     Serial.println("角度2(R) = " + String(ANG2));
     Serial.println("角度3(target) = " + String(ANG3) + " 度");
     Serial.println("distance3(target) = " + String(distance3) + " (cm)");
-
-    float omega = ANG3 * PI / 180 / T_Catch_up;
 
     Serial.println("轉速 = " + String(omega) + "rad/s");
 
@@ -133,7 +134,7 @@ double angle_data(float x, float y){
     
 double Speed_Cal(){
 
-    int VToPwm = 3;
+    float VToPwm = 1.5;
     V0 = distance3 / T_Catch_up;
     
     float V1 = V0 + V1_plus;
@@ -144,8 +145,8 @@ double Speed_Cal(){
 
     //  5是速度換PWM值得係數，此係數還待更加精準的測量
     
-    Pa = V1 * VToPwm;
-    Pb = V2 * VToPwm;
+    Pa = V2 * VToPwm;
+    Pb = V1 * VToPwm;
     if (Pa > 255){
         Pa = 255;
     }
@@ -187,5 +188,5 @@ void loop() {
         
       }
 
-    delay(500) ;
+    delay(200) ;
 }
