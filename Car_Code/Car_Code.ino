@@ -41,6 +41,11 @@ float V2_plus;
 int Pa;
 int Pb;
 
+// 開關相關腳位及變數
+boolean state = false;
+boolean buttonUp = true;
+int SwitchPin = 31;
+
 //-----------------------------SetUpIsHere--------------------------------------------------------------
 void setup() {
     Serial.begin(9600);
@@ -66,12 +71,16 @@ void setup() {
     pinMode (bs, OUTPUT);  
   
     //  馬達初始轉速 (往前), (速度60)
-    analogWrite(pwma, 60);
-    analogWrite(pwmb, 60);
+    //  analogWrite(pwma, 60);
+    //  analogWrite(pwmb, 60);
     digitalWrite(af, HIGH);
     digitalWrite(as, LOW);
     digitalWrite(bf, HIGH);
     digitalWrite(bs, LOW);
+
+    //  開關初始設定
+    pinMode(SwitchPin, INPUT);
+    digitalWrite(SwitchPin, HIGH);  //  上拉電阻
 }
 
 double ping1() {
@@ -115,7 +124,7 @@ double angle_data(float x, float y){
         omega = ANG3 * PI / 180 / T_Catch_up;
     } else{
         ANG3 = 90 - ANG3;
-        omega = ANG3 * PI / 180 / T_Catch_up *　(-1);
+        omega = ANG3 * PI / 180 / T_Catch_up * (-1);
     }
 
     Serial.println("角度1(L) = " + String(ANG1)); 
@@ -167,27 +176,42 @@ double Speed_Cal(){
 //-----------------------------LoopIsHere----------------------------------------------------------------
 
 void loop() {
-    
-    String str1 ="";
-    distance1  = ping1()  ;
-    distance2  = ping2()  ;
-    str1 = " Distance1=" + String(distance1) + "cm , Distance2=" + String(distance2) + " cm" ;
-    Serial.println(str1) ;
-    
-    //  控制馬達的轉動方式放在這
-    if (distance1 <= 50  ||  distance2 <= 50){
-      
-        digitalWrite (af, LOW); 
-        digitalWrite (bf, LOW);
-        Serial.println("Stop");
-    
-    } else {
-      
-        digitalWrite (af, HIGH);
-        digitalWrite (bf, HIGH);
-        
-        angle_data(distance1, distance2);
-        Speed_Cal();       
+    if(digitalRead(SwitchPin) != HIGH && buttonUp == true) {
+        state = !state;
+        buttonUp = false;
+    } else if (digitalRead(SwitchPin) == HIGH && buttonUp != true) {
+        buttonUp = true;
       }
-    delay(500) ;
+    delay(10);
+
+    if (state == false){
+        Serial.println("Switch on");    
+        String str1 ="";
+        distance1  = ping1()  ;
+        distance2  = ping2()  ;
+        str1 = " Distance1=" + String(distance1) + "cm , Distance2=" + String(distance2) + " cm" ;
+        Serial.println(str1) ;
+        
+        //  控制馬達的轉動方式放在這
+        if (distance1 <= 50  ||  distance2 <= 50){
+          
+            digitalWrite (af, LOW); 
+            digitalWrite (bf, LOW);
+            Serial.println("Stop");
+        
+        } else {
+          
+            digitalWrite (af, HIGH);
+            digitalWrite (bf, HIGH);
+            
+            angle_data(distance1, distance2);
+            Speed_Cal(); 
+          } 
+        delay(300);
+    } else{
+          
+          digitalWrite (af, LOW);
+          digitalWrite (bf, LOW);    
+      } 
+
 }

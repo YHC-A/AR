@@ -189,9 +189,23 @@ void loop() {
         String str1 ="";
         distance1  = ping1()  ;
         distance2  = ping2()  ;
+        
+        double distance4;
+        distance4 = distance1 - distance2;
+        
+        if (distance4 >= 20){
+            distance1 = (distance1 + distance2) / 2 - 7.6;
+            distance2 = (distance1 + distance2) / 2 + 7.5;  
+        }
+        if (distance4 <= -20){
+                distance2 = (distance1 + distance2) / 2 - 7.6;
+                distance1 = (distance1 + distance2) / 2 + 7.5;
+        }
+        
         str1 = " Distance1=" + String(distance1) + "cm , Distance2=" + String(distance2) + " cm" ;
         Serial.println(str1) ;
-        
+
+
         //  控制馬達的轉動方式放在這
         if (distance1 <= 50  ||  distance2 <= 50){
           
