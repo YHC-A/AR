@@ -177,10 +177,10 @@ double Redistance(double x, double y){
     double distance4 = distance1 - distance2;
         
     if (distance4 >= 20){
-        distance1 = ((x + y) / 2) + 10;
-        distance2 = ((x + y) / 2) - 10;  
+        distance1 = ((x + y) / 2) + 10.1;
+        distance2 = ((x + y) / 2) - 10;
     }else if (distance4 < -20){
-        distance1 = ((x + y) / 2) - 10;
+        distance1 = ((x + y) / 2) - 10.1;
         distance2 = ((x + y) / 2) + 10;
     }
 }
@@ -201,8 +201,6 @@ void loop() {
         String str1 ="";
         distance1  = ping1();
         distance2  = ping2();
-        
-        Redistance(distance1, distance2);
 
         str1 = " Distance1=" + String(distance1) + "cm , Distance2=" + String(distance2) + " cm" ;
         Serial.println(str1) ;
@@ -219,12 +217,14 @@ void loop() {
           
             digitalWrite (af, HIGH);
             digitalWrite (bf, HIGH);
+
+            Redistance(distance1, distance2);
             
             angle_data(distance1, distance2);
             Speed_Cal(); 
           } 
           
-        delay(500);
+        delay(100);
         
     } else{
           
