@@ -137,8 +137,8 @@ double angle_data(float x, float y){
     V1_plus = omega * wheelBetween / 2;
     V2_plus = omega * wheelBetween / 2 * (-1);
 
-    Serial.println("V1_plus = " + String(V1_plus) + "(cm/s)");
-    Serial.println("V2_plus = " + String(V2_plus) + "(cm/s)");
+    //  Serial.println("V1_plus = " + String(V1_plus) + "(cm/s)");
+    //  Serial.println("V2_plus = " + String(V2_plus) + "(cm/s)");
 
 }
     // 這邊要用pwma, pwmb 算出初始速度，上面的初始值設定為60，找出速度對pwm的關係，藉此可知初始速度V_01, V_02
@@ -172,6 +172,18 @@ double Speed_Cal(){
     analogWrite(pwmb, Pb);    
 
 }
+
+double Redistance(double x, double y){
+    double distance4 = distance1 - distance2;
+        
+    if (distance4 >= 20){
+        distance1 = ((x + y) / 2) + 10.1;
+        distance2 = ((x + y) / 2) - 10;
+    }else if (distance4 < -20){
+        distance1 = ((x + y) / 2) - 10.1;
+        distance2 = ((x + y) / 2) + 10;
+    }
+}
   
 //-----------------------------LoopIsHere----------------------------------------------------------------
 
@@ -185,23 +197,11 @@ void loop() {
     delay(10);
 
     if (state == false){
-        Serial.println("Switch on");    
+        Serial.println("SwitchOn");    
         String str1 ="";
-        distance1  = ping1()  ;
-        distance2  = ping2()  ;
-        
-        double distance4;
-        distance4 = distance1 - distance2;
-        
-        if (distance4 >= 20){
-            distance1 = (distance1 + distance2) / 2 - 7.6;
-            distance2 = (distance1 + distance2) / 2 + 7.5;  
-        }
-        if (distance4 <= -20){
-                distance2 = (distance1 + distance2) / 2 - 7.6;
-                distance1 = (distance1 + distance2) / 2 + 7.5;
-        }
-        
+        distance1  = ping1();
+        distance2  = ping2();
+
         str1 = " Distance1=" + String(distance1) + "cm , Distance2=" + String(distance2) + " cm" ;
         Serial.println(str1) ;
 
@@ -217,11 +217,15 @@ void loop() {
           
             digitalWrite (af, HIGH);
             digitalWrite (bf, HIGH);
+
+            Redistance(distance1, distance2);
             
             angle_data(distance1, distance2);
             Speed_Cal(); 
           } 
-        delay(500);
+          
+        delay(100);
+        
     } else{
           
           digitalWrite (af, LOW);
