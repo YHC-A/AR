@@ -243,7 +243,7 @@ void loop() {
 
             distance4 = abs(distance1 - distance2);
             
-            while (distance4 > 20){
+            while (distance4 > trigBetween){
               
                 Find_Someone(distance1, distance2);
                 
