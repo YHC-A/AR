@@ -1,5 +1,5 @@
-const int trigPin1 = 22;
-const int echoPin1 = 24;
+const int trigPin1 = 30;
+const int echoPin1 = 32;
 const int trigPin2 = 8;
 const int echoPin2 = 9;
 
@@ -149,7 +149,7 @@ double angle_data(float x, float y){
     
 double Speed_Cal(){
 
-    float VToPwm = 1.5;
+    float VToPwm = 1.1;
     V0 = distance3 / T_Catch_up;
     
     float V1 = V0 + V1_plus;
@@ -162,11 +162,11 @@ double Speed_Cal(){
     
     Pa = V2 * VToPwm;
     Pb = V1 * VToPwm;
-    if (Pa > 255){
-        Pa = 255;
+    if (Pa > 150){
+        Pa = 150;
     }
-    if (Pb > 255){
-        Pb = 255;
+    if (Pb > 150){
+        Pb = 150;
     }
     
     Serial.println("Pa = " + String(Pa));
@@ -177,22 +177,19 @@ double Speed_Cal(){
 
 }
 
-double Find_Someone(double x, double y){
+double Find_Someone(double lastD1, double lastD2){
     Serial.println("search");
-    double lastD1;
-    double lastD2;
+
     if (lastD1 >= lastD2){
       
         Pa = 0;
-        Pb = 15;
+        Pb = 30;
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
-        lastD1 = ping1();
-        lastD2 = ping2();
         
-    }else{
+    }else {
       
-        Pa = 15;
+        Pa = 37;
         Pb = 0;
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
@@ -203,14 +200,32 @@ double Find_Someone(double x, double y){
     lastD2 = ping2();
     distance1 = lastD1;
     distance2 = lastD2;
+    
     distance4 = abs(distance1 - distance2);
     Serial.println("NewD1 = " + String(distance1) + "NewD2 = " + String(distance2));
-    
+    delay(100);
 }
-  
+
+void Back_Check(double x, double y){
+    if (distance1 <= 30  ||  distance2 <= 30){
+      
+        digitalWrite(as, HIGH);
+        digitalWrite(bs, HIGH);
+        analogWrite(pwma, 57);
+        analogWrite(pwmb, 50);
+        Serial.println("Back");
+    
+    } else{
+      
+          digitalWrite(as, LOW);
+          digitalWrite(bs, LOW);
+      }  
+}
+
 //-----------------------------LoopIsHere----------------------------------------------------------------
 
 void loop() {
+  
     if(digitalRead(SwitchPin) != HIGH && buttonUp == true) {
         state = !state;
         buttonUp = false;
@@ -235,15 +250,16 @@ void loop() {
             digitalWrite (af, LOW); 
             digitalWrite (bf, LOW);
             Serial.println("Stop");
+            Back_Check(distance1, distance2);
         
         } else {
-          
+
             digitalWrite (af, HIGH);
             digitalWrite (bf, HIGH);
 
             distance4 = abs(distance1 - distance2);
             
-            while (distance4 > trigBetween){
+            while (distance4 > 20){
               
                 Find_Someone(distance1, distance2);
                 
@@ -252,8 +268,9 @@ void loop() {
             angle_data(distance1, distance2);
             Speed_Cal();
             
-          } 
-        delay(500);
+          }
+          
+        delay(300);
 
     } else{
           
