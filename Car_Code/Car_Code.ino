@@ -1,5 +1,5 @@
-const int trigPin1 = 22;
-const int echoPin1 = 24;
+const int trigPin1 = 30;
+const int echoPin1 = 32;
 const int trigPin2 = 8;
 const int echoPin2 = 9;
 
@@ -25,12 +25,13 @@ int data = 1;
 double distance1;
 double distance2;
 double distance3;
+double distance4;
 
 double ANG1;
 double ANG2;
 double ANG3;
 
-double trigBetween = 10;
+double trigBetween = 20;
 double wheelBetween = 50;
 int T_Catch_up = 2;
 
@@ -127,26 +128,28 @@ double angle_data(float x, float y){
         omega = ANG3 * PI / 180 / T_Catch_up * (-1);
     }
 
+    /*
     Serial.println("角度1(L) = " + String(ANG1)); 
     Serial.println("角度2(R) = " + String(ANG2));
     Serial.println("角度3(target) = " + String(ANG3) + " 度");
     Serial.println("distance3(target) = " + String(distance3) + " (cm)");
 
     Serial.println("轉速 = " + String(omega) + "rad/s");
-
+    */
+    
     V1_plus = omega * wheelBetween / 2;
     V2_plus = omega * wheelBetween / 2 * (-1);
-
+    /*
     Serial.println("V1_plus = " + String(V1_plus) + "(cm/s)");
     Serial.println("V2_plus = " + String(V2_plus) + "(cm/s)");
-
+    */
 }
     // 這邊要用pwma, pwmb 算出初始速度，上面的初始值設定為60，找出速度對pwm的關係，藉此可知初始速度V_01, V_02
     // 接著用return 回傳V_plus + V0，藉此算出兩輪車速。
     
 double Speed_Cal(){
 
-    float VToPwm = 1.5;
+    float VToPwm = 1.1;
     V0 = distance3 / T_Catch_up;
     
     float V1 = V0 + V1_plus;
@@ -159,12 +162,13 @@ double Speed_Cal(){
     
     Pa = V2 * VToPwm;
     Pb = V1 * VToPwm;
-    if (Pa > 255){
-        Pa = 255;
+    if (Pa > 150){
+        Pa = 150;
     }
-    if (Pb > 255){
-        Pb = 255;
+    if (Pb > 150){
+        Pb = 150;
     }
+    
     Serial.println("Pa = " + String(Pa));
     Serial.println("Pb = " + String(Pb));
 
@@ -172,42 +176,103 @@ double Speed_Cal(){
     analogWrite(pwmb, Pb);    
 
 }
-  
+
+double Find_Someone(double lastD1, double lastD2){
+    Serial.println("search");
+
+    if (lastD1 >= lastD2){
+      
+        Pa = 0;
+        Pb = 30;
+        analogWrite(pwma, Pa);
+        analogWrite(pwmb, Pb);
+        
+    }else {
+      
+        Pa = 37;
+        Pb = 0;
+        analogWrite(pwma, Pa);
+        analogWrite(pwmb, Pb);
+      
+    }
+    
+    lastD1 = ping1();
+    lastD2 = ping2();
+    distance1 = lastD1;
+    distance2 = lastD2;
+    
+    distance4 = abs(distance1 - distance2);
+    Serial.println("NewD1 = " + String(distance1) + "NewD2 = " + String(distance2));
+    delay(100);
+}
+
+void Back_Check(double x, double y){
+    if (x <= 30  ||  y <= 30){
+      
+        digitalWrite(as, HIGH);
+        digitalWrite(bs, HIGH);
+        analogWrite(pwma, 57);
+        analogWrite(pwmb, 50);
+        Serial.println("Back");
+    
+    }else {
+      
+          digitalWrite(as, LOW);
+          digitalWrite(bs, LOW);
+      }  
+}
+
 //-----------------------------LoopIsHere----------------------------------------------------------------
 
 void loop() {
+  
     if(digitalRead(SwitchPin) != HIGH && buttonUp == true) {
         state = !state;
         buttonUp = false;
     } else if (digitalRead(SwitchPin) == HIGH && buttonUp != true) {
         buttonUp = true;
       }
+      
     delay(10);
 
     if (state == false){
         Serial.println("Switch on");    
         String str1 ="";
-        distance1  = ping1()  ;
-        distance2  = ping2()  ;
+        distance1  = ping1();
+        distance2  = ping2();
+        
         str1 = " Distance1=" + String(distance1) + "cm , Distance2=" + String(distance2) + " cm" ;
         Serial.println(str1) ;
-        
+
+
         //  控制馬達的轉動方式放在這
         if (distance1 <= 50  ||  distance2 <= 50){
           
             digitalWrite (af, LOW); 
             digitalWrite (bf, LOW);
             Serial.println("Stop");
+            Back_Check(distance1, distance2);
         
         } else {
-          
+
             digitalWrite (af, HIGH);
             digitalWrite (bf, HIGH);
+
+            distance4 = abs(distance1 - distance2);
+            
+            while (distance4 > 20){
+              
+                Find_Someone(distance1, distance2);
+                
+            }
             
             angle_data(distance1, distance2);
-            Speed_Cal(); 
-          } 
+            Speed_Cal();
+            
+          }
+          
         delay(300);
+
     } else{
           
           digitalWrite (af, LOW);

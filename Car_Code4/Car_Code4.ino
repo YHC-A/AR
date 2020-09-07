@@ -85,10 +85,10 @@ void setup() {
 }
 
 double ping1() {
-    digitalWrite(trigPin1,HIGH) ; //觸發腳位設定為高電位
+    digitalWrite(trigPin1 ,HIGH); //觸發腳位設定為高電位
     delayMicroseconds(10);   //持續5微秒
-    digitalWrite(trigPin1,LOW) ;
-    distance1 = pulseIn(echoPin1,HIGH) / 58.0;
+    digitalWrite(trigPin1 ,LOW);
+    distance1 = pulseIn(echoPin1 ,HIGH) / 58.0;
     if (distance1 >= 350){
       return 350  ;  // 換算成 cm 並傳回
     }  else return  (distance1);
@@ -96,13 +96,33 @@ double ping1() {
 
 
 double ping2() {
-    digitalWrite(trigPin2,HIGH) ; //觸發腳位設定為高電位
+    digitalWrite(trigPin2 ,HIGH); //觸發腳位設定為高電位
     delayMicroseconds(10);   //持續5微秒
-    digitalWrite(trigPin2,LOW) ;
-    distance2 = pulseIn(echoPin2,HIGH) / 58.0;
+    digitalWrite(trigPin2 ,LOW);
+    distance2 = pulseIn(echoPin2 ,HIGH) / 58.0;
     if (distance2 >= 350){
       return 350  ;  // 換算成 cm 並傳回
     }  else return  (distance2);
+}
+
+double pingL() {
+    digitalWrite(trigPin3 ,HIGH); //觸發腳位設定為高電位
+    delayMicroseconds(10);   //持續5微秒
+    digitalWrite(trigPin3,LOW) ;
+    double distanceL = pulseIn(echoPin3,HIGH) / 58.0;
+    if (distanceL >= 350){
+      return 350  ;  // 換算成 cm 並傳回
+    }  else return  (distanceL);
+}
+
+double pingR() {
+    digitalWrite(trigPin4 ,HIGH); //觸發腳位設定為高電位
+    delayMicroseconds(10);   //持續5微秒
+    digitalWrite(trigPin4 ,LOW) ;
+    double distanceR = pulseIn(echoPin4,HIGH) / 58.0;
+    if (distanceR >= 350){
+      return 350  ;  // 換算成 cm 並傳回
+    }  else return  (distanceR);
 }
 
 double angle_data(float x, float y){
@@ -157,7 +177,6 @@ double Speed_Cal(){
     Serial.println("V1 = " + String(V1));
     Serial.println("V2 = " + String(V2));
 
-
     //  VToPwm是速度換PWM值得係數，此係數還待更加精準的測量
     
     Pa = V2 * VToPwm;
@@ -207,7 +226,7 @@ double Find_Someone(double lastD1, double lastD2){
 }
 
 void Back_Check(double x, double y){
-    if (distance1 <= 30  ||  distance2 <= 30){
+    if (x <= 30  ||  y <= 30){
       
         digitalWrite(as, HIGH);
         digitalWrite(bs, HIGH);
@@ -215,11 +234,25 @@ void Back_Check(double x, double y){
         analogWrite(pwmb, 50);
         Serial.println("Back");
     
-    } else{
+    }else {
       
           digitalWrite(as, LOW);
           digitalWrite(bs, LOW);
       }  
+}
+
+void Left_Right_check(double *D1, double *D2, double DR, double DL){
+    
+    if(DR <= 20 && Pa <= Pb){
+        Pb = Pa;
+        Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
+        Serial.println("Turn left Fixing");
+    }
+    if(DL <= 20 && Pb <= Pa){
+        Pa = Pb;
+        Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
+        Serial.println("Turn right Fixing");
+    }
 }
 
 //-----------------------------LoopIsHere----------------------------------------------------------------
@@ -232,6 +265,7 @@ void loop() {
     } else if (digitalRead(SwitchPin) == HIGH && buttonUp != true) {
         buttonUp = true;
       }
+      
     delay(10);
 
     if (state == false){
@@ -268,14 +302,19 @@ void loop() {
             angle_data(distance1, distance2);
             Speed_Cal();
             
+            double distanceL = pingL();
+            double distanceR = pingR();
+            
+            Left_Right_check(&distance1, &distance2, distanceR, distanceL);
+            
           }
           
         delay(300);
 
     } else{
           
-          digitalWrite (af, LOW);
-          digitalWrite (bf, LOW);    
+          digitalWrite(af, LOW);
+          digitalWrite(bf, LOW);    
       } 
 
 }
