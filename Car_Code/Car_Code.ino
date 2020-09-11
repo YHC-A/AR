@@ -1,3 +1,6 @@
+#include <Servo.h>
+#include <Wire.h>
+
 const int trigPin1 = 30;
 const int echoPin1 = 32;
 const int trigPin2 = 8;
@@ -85,10 +88,10 @@ void setup() {
 }
 
 double ping1() {
-    digitalWrite(trigPin1,HIGH) ; //觸發腳位設定為高電位
+    digitalWrite(trigPin1 ,HIGH); //觸發腳位設定為高電位
     delayMicroseconds(10);   //持續5微秒
-    digitalWrite(trigPin1,LOW) ;
-    distance1 = pulseIn(echoPin1,HIGH) / 58.0;
+    digitalWrite(trigPin1 ,LOW);
+    distance1 = pulseIn(echoPin1 ,HIGH) / 58.0;
     if (distance1 >= 350){
       return 350  ;  // 換算成 cm 並傳回
     }  else return  (distance1);
@@ -96,13 +99,33 @@ double ping1() {
 
 
 double ping2() {
-    digitalWrite(trigPin2,HIGH) ; //觸發腳位設定為高電位
+    digitalWrite(trigPin2 ,HIGH); //觸發腳位設定為高電位
     delayMicroseconds(10);   //持續5微秒
-    digitalWrite(trigPin2,LOW) ;
-    distance2 = pulseIn(echoPin2,HIGH) / 58.0;
+    digitalWrite(trigPin2 ,LOW);
+    distance2 = pulseIn(echoPin2 ,HIGH) / 58.0;
     if (distance2 >= 350){
       return 350  ;  // 換算成 cm 並傳回
     }  else return  (distance2);
+}
+
+double pingL() {
+    digitalWrite(trigPin3 ,HIGH); //觸發腳位設定為高電位
+    delayMicroseconds(10);   //持續5微秒
+    digitalWrite(trigPin3,LOW) ;
+    double distanceL = pulseIn(echoPin3,HIGH) / 58.0;
+    if (distanceL >= 350){
+      return 350  ;  // 換算成 cm 並傳回
+    }  else return  (distanceL);
+}
+
+double pingR() {
+    digitalWrite(trigPin4 ,HIGH); //觸發腳位設定為高電位
+    delayMicroseconds(10);   //持續5微秒
+    digitalWrite(trigPin4 ,LOW) ;
+    double distanceR = pulseIn(echoPin4,HIGH) / 58.0;
+    if (distanceR >= 350){
+      return 350  ;  // 換算成 cm 並傳回
+    }  else return  (distanceR);
 }
 
 double angle_data(float x, float y){
@@ -116,7 +139,7 @@ double angle_data(float x, float y){
 
     ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(x, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
 
-    Serial.println("ANG3(未修正) = " + String(ANG3));
+    //  Serial.println("ANG3(未修正) = " + String(ANG3));
     
     float omega;
     
@@ -133,12 +156,12 @@ double angle_data(float x, float y){
     Serial.println("角度2(R) = " + String(ANG2));
     Serial.println("角度3(target) = " + String(ANG3) + " 度");
     Serial.println("distance3(target) = " + String(distance3) + " (cm)");
-
     Serial.println("轉速 = " + String(omega) + "rad/s");
     */
     
     V1_plus = omega * wheelBetween / 2;
     V2_plus = omega * wheelBetween / 2 * (-1);
+    
     /*
     Serial.println("V1_plus = " + String(V1_plus) + "(cm/s)");
     Serial.println("V2_plus = " + String(V2_plus) + "(cm/s)");
@@ -156,7 +179,6 @@ double Speed_Cal(){
     float V2 = V0 + V2_plus;
     Serial.println("V1 = " + String(V1));
     Serial.println("V2 = " + String(V2));
-
 
     //  VToPwm是速度換PWM值得係數，此係數還待更加精準的測量
     
@@ -222,6 +244,25 @@ void Back_Check(double x, double y){
       }  
 }
 
+void Left_Right_check(double *D1, double *D2, double DR, double DL){
+    
+    if(DR <= 20 && Pa <= Pb){
+        Pa = Pb + 15;
+        Serial.println("--------------Turn left Fixing---------------");
+        Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
+        Serial.println("Turn left Fixing");
+        analogWrite(pwma, Pa);
+        analogWrite(pwmb, Pb);
+    }
+    if(DL <= 20 && Pb <= Pa){
+        Pb = Pa + 15;
+        Serial.println("--------------Turn right Fixing-------------");
+        Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
+        analogWrite(pwma, Pa);
+        analogWrite(pwmb, Pb);
+    }
+}
+
 //-----------------------------LoopIsHere----------------------------------------------------------------
 
 void loop() {
@@ -268,6 +309,11 @@ void loop() {
             
             angle_data(distance1, distance2);
             Speed_Cal();
+
+            //  左右距離確認
+            double distanceL = pingL();
+            double distanceR = pingR();            
+            Left_Right_check(&distance1, &distance2, distanceR, distanceL);
             
           }
           
@@ -275,8 +321,8 @@ void loop() {
 
     } else{
           
-          digitalWrite (af, LOW);
-          digitalWrite (bf, LOW);    
+          digitalWrite(af, LOW);
+          digitalWrite(bf, LOW);    
       } 
 
-}
+}         

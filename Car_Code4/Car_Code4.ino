@@ -1,3 +1,6 @@
+#include <Servo.h>
+#include <Wire.h>
+
 const int trigPin1 = 30;
 const int echoPin1 = 32;
 const int trigPin2 = 8;
@@ -136,7 +139,7 @@ double angle_data(float x, float y){
 
     ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(x, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
 
-    Serial.println("ANG3(未修正) = " + String(ANG3));
+    //  Serial.println("ANG3(未修正) = " + String(ANG3));
     
     float omega;
     
@@ -153,12 +156,12 @@ double angle_data(float x, float y){
     Serial.println("角度2(R) = " + String(ANG2));
     Serial.println("角度3(target) = " + String(ANG3) + " 度");
     Serial.println("distance3(target) = " + String(distance3) + " (cm)");
-
     Serial.println("轉速 = " + String(omega) + "rad/s");
     */
     
     V1_plus = omega * wheelBetween / 2;
     V2_plus = omega * wheelBetween / 2 * (-1);
+    
     /*
     Serial.println("V1_plus = " + String(V1_plus) + "(cm/s)");
     Serial.println("V2_plus = " + String(V2_plus) + "(cm/s)");
@@ -244,14 +247,19 @@ void Back_Check(double x, double y){
 void Left_Right_check(double *D1, double *D2, double DR, double DL){
     
     if(DR <= 20 && Pa <= Pb){
-        Pb = Pa;
+        Pa = Pb + 15;
+        Serial.println("--------------Turn left Fixing---------------");
         Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
         Serial.println("Turn left Fixing");
+        analogWrite(pwma, Pa);
+        analogWrite(pwmb, Pb);
     }
     if(DL <= 20 && Pb <= Pa){
-        Pa = Pb;
+        Pb = Pa + 15;
+        Serial.println("--------------Turn right Fixing-------------");
         Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
-        Serial.println("Turn right Fixing");
+        analogWrite(pwma, Pa);
+        analogWrite(pwmb, Pb);
     }
 }
 
@@ -301,10 +309,10 @@ void loop() {
             
             angle_data(distance1, distance2);
             Speed_Cal();
-            
+
+            //  左右距離確認
             double distanceL = pingL();
-            double distanceR = pingR();
-            
+            double distanceR = pingR();            
             Left_Right_check(&distance1, &distance2, distanceR, distanceL);
             
           }
