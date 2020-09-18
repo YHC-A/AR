@@ -22,7 +22,7 @@ int pwma = 4;
 int pwmb = 3;
 
 const int inter_time = 500;
-int time = 0;
+int times = 0;
 int data = 1;
 
 double distance1;
@@ -44,6 +44,10 @@ float V2_plus;
 
 int Pa;
 int Pb;
+double AVGPa = 0;
+double AVGPb = 0;
+double toPa = 0;
+double toPb = 0;
 
 // 開關相關腳位及變數
 boolean state = false;
@@ -184,11 +188,11 @@ double Speed_Cal(){
     
     Pa = V2 * VToPwm;
     Pb = V1 * VToPwm;
-    if (Pa > 150){
-        Pa = 150;
+    if (Pa > 100){
+        Pa = 100;
     }
-    if (Pb > 150){
-        Pb = 150;
+    if (Pb > 100){
+        Pb = 10;
     }
     
     Serial.println("Pa = " + String(Pa));
@@ -233,8 +237,8 @@ void Back_Check(double x, double y){
       
         digitalWrite(as, HIGH);
         digitalWrite(bs, HIGH);
-        analogWrite(pwma, 57);
-        analogWrite(pwmb, 50);
+        analogWrite(pwma, 47);
+        analogWrite(pwmb, 40);
         Serial.println("Back");
     
     }else {
@@ -260,6 +264,26 @@ void Left_Right_check(double *D1, double *D2, double DR, double DL){
         Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
+    }
+}
+
+void Rush_Check(int Pa, int Pb){
+
+    Serial.println("--------------RUSH CHECK-------------");
+    int LastPa = Pa;
+    int LastPb = Pb;
+    toPa = toPa + Pa;
+    toPb = toPb + Pb;
+    AVGPa = toPa / times;
+    AVGPb = toPb / times;
+    Serial.println("次數" + String(times));
+    Serial.println("AVGPa = " + String(AVGPa) + " - " + "AVGPb = " + String(AVGPb));
+    double AVGPaa = AVGPa - 30;
+    double AVGPbb = AVGPb - 30;
+
+    if (LastPa > AVGPaa || LastPb > AVGPbb){
+        Pa = AVGPa;
+        Pb = AVGPb;
     }
 }
 
@@ -296,6 +320,7 @@ void loop() {
         
         } else {
 
+            times += 1;
             digitalWrite (af, HIGH);
             digitalWrite (bf, HIGH);
 
@@ -314,10 +339,11 @@ void loop() {
             double distanceL = pingL();
             double distanceR = pingR();            
             Left_Right_check(&distance1, &distance2, distanceR, distanceL);
+            Rush_Check(Pa, Pb);
             
           }
           
-        delay(300);
+        delay(inter_time);
 
     } else{
           
