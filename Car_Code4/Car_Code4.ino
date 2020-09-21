@@ -280,7 +280,12 @@ void Rush_Check(int Pa, int Pb){
     Serial.println("AVGPa = " + String(AVGPa) + " - " + "AVGPb = " + String(AVGPb));
     double AVGPaa = AVGPa - 30;
     double AVGPbb = AVGPb - 30;
-
+    /*    Try it 
+    if (LastPa > (AVGPa - 30) || LastPb > (AVGPb - 30)){
+        Pa = AVGPa;
+        Pb = AVGPb;
+    }
+    */
     if (LastPa > AVGPaa || LastPb > AVGPbb){
         Pa = AVGPa;
         Pb = AVGPb;
