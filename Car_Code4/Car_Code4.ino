@@ -34,7 +34,7 @@ double ANG1;
 double ANG2;
 double ANG3;
 
-double trigBetween = 20;
+double trigBetween = 25;
 double wheelBetween = 50;
 int T_Catch_up = 2;
 
@@ -96,8 +96,8 @@ double ping1() {
     delayMicroseconds(10);   //持續5微秒
     digitalWrite(trigPin1 ,LOW);
     distance1 = pulseIn(echoPin1 ,HIGH) / 58.0;
-    if (distance1 >= 350){
-      return 350  ;  // 換算成 cm 並傳回
+    if (distance1 >= 250){
+      return 250;  // 換算成 cm 並傳回
     }  else return  (distance1);
 }
 
@@ -107,8 +107,8 @@ double ping2() {
     delayMicroseconds(10);   //持續5微秒
     digitalWrite(trigPin2 ,LOW);
     distance2 = pulseIn(echoPin2 ,HIGH) / 58.0;
-    if (distance2 >= 350){
-      return 350  ;  // 換算成 cm 並傳回
+    if (distance2 >= 250){
+      return 250;  // 換算成 cm 並傳回
     }  else return  (distance2);
 }
 
@@ -176,7 +176,7 @@ double angle_data(float x, float y){
     
 double Speed_Cal(){
 
-    float VToPwm = 1.1;
+    float VToPwm = 1.0;
     V0 = distance3 / T_Catch_up;
     
     float V1 = V0 + V1_plus;
@@ -192,30 +192,32 @@ double Speed_Cal(){
         Pa = 100;
     }
     if (Pb > 100){
-        Pb = 10;
+        Pb = 100;
     }
     
     Serial.println("Pa = " + String(Pa));
     Serial.println("Pb = " + String(Pb));
-
+    digitalWrite (af, HIGH);
+    digitalWrite (bf, HIGH);
     analogWrite(pwma, Pa);
     analogWrite(pwmb, Pb);    
 
 }
 
+//-------------------------------Find_Someone------------------------------------
 double Find_Someone(double lastD1, double lastD2){
     Serial.println("search");
 
     if (lastD1 >= lastD2){
       
         Pa = 0;
-        Pb = 30;
+        Pb = 25;
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
         
     }else {
       
-        Pa = 37;
+        Pa = 25;
         Pb = 0;
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
@@ -272,24 +274,21 @@ void Rush_Check(int Pa, int Pb){
     Serial.println("--------------RUSH CHECK-------------");
     int LastPa = Pa;
     int LastPb = Pb;
-    toPa = toPa + Pa;
-    toPb = toPb + Pb;
+    toPa += Pa;
+    toPb += Pb;
     AVGPa = toPa / times;
     AVGPb = toPb / times;
     Serial.println("次數" + String(times));
     Serial.println("AVGPa = " + String(AVGPa) + " - " + "AVGPb = " + String(AVGPb));
     double AVGPaa = AVGPa - 30;
     double AVGPbb = AVGPb - 30;
-    /*    Try it 
+    //    Try it 
     if (LastPa > (AVGPa - 30) || LastPb > (AVGPb - 30)){
         Pa = AVGPa;
         Pb = AVGPb;
     }
-    */
-    if (LastPa > AVGPaa || LastPb > AVGPbb){
-        Pa = AVGPa;
-        Pb = AVGPb;
-    }
+        analogWrite(pwma, Pa);
+        analogWrite(pwmb, Pb);
 }
 
 //-----------------------------LoopIsHere----------------------------------------------------------------
@@ -317,7 +316,11 @@ void loop() {
 
         //  控制馬達的轉動方式放在這
         if (distance1 <= 50  ||  distance2 <= 50){
-          
+            /*
+            if (distance1 == 0 || distance2 == 0){
+                Find_Someone(distance1, distance2);
+            }
+            */
             digitalWrite (af, LOW); 
             digitalWrite (bf, LOW);
             Serial.println("Stop");
@@ -331,7 +334,7 @@ void loop() {
 
             distance4 = abs(distance1 - distance2);
             
-            while (distance4 > 20){
+            while (distance4 > trigBetween){
               
                 Find_Someone(distance1, distance2);
                 
@@ -339,12 +342,12 @@ void loop() {
             
             angle_data(distance1, distance2);
             Speed_Cal();
+            Rush_Check(Pa, Pb);
 
             //  左右距離確認
             double distanceL = pingL();
             double distanceR = pingR();            
             Left_Right_check(&distance1, &distance2, distanceR, distanceL);
-            Rush_Check(Pa, Pb);
             
           }
           
