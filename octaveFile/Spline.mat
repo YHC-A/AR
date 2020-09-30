@@ -1,0 +1,23 @@
+x = [0 50 65 40.50 -10 -40];
+y = [0 100 186 279 351 578];
+index = 1:length(x);
+index2 = linspace(1, length(x), 101);
+x2 = interp1(index, x, index2, 'spline');
+y2 = interp1(index, y, index2, 'spline');
+
+
+% ANG1 = acos((x^2 + trigBetween^2 - y^2) / (2 * x * trigBetween)) * 180 / pi ;
+% ANG2 = acos((y^2 + trigBetween^2 - x^2) / (2 * y * trigBetween)) * 180 / pi ;
+% distance3 = (y^2 + (trigBetween / 2)^2- 2 * y * (trigBetween / 2) * cos(ANG2 / 180 * pi))^0.5;
+% ANG3 = acos((distance3^2 + (trigBetween / 2)^2 - x^2) / (2 * distance3 * (trigBetween / 2))) * 180 / pi ;
+
+% V1_plus = omega * wheelBetween / 2;
+% V2_plus = omega * wheelBetween / 2 * (-1);
+
+% d3C = distance3*cos(ANG3);
+% d3S = distance3*sin(ANG3);
+
+plot(x, y, x2, y2, '-');
+
+legend('Origianl data', 'Interpolated data');
+save AAA.mat
