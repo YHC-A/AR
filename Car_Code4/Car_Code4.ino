@@ -140,7 +140,6 @@ double angle_data(float x, float y){
     ANG2 = acos((pow(y, 2) + pow(trigBetween, 2) - pow(x, 2)) / (2 * y * trigBetween)) * 180 / PI ;
 
     distance3 = sqrt(pow(y, 2) + pow((trigBetween / 2), 2) - 2 * y * (trigBetween / 2) * cos(ANG2 / 180 * PI));
-
     ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(x, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
 
     //  Serial.println("ANG3(未修正) = " + String(ANG3));
@@ -150,7 +149,7 @@ double angle_data(float x, float y){
     if (ANG3 >= 90){
         ANG3 = ANG3 - 90;
         omega = ANG3 * PI / 180 / T_Catch_up;
-    } else{
+    }else{
         ANG3 = 90 - ANG3;
         omega = ANG3 * PI / 180 / T_Catch_up * (-1);
     }
@@ -171,8 +170,8 @@ double angle_data(float x, float y){
     Serial.println("V2_plus = " + String(V2_plus) + "(cm/s)");
     */
 }
-    // 這邊要用pwma, pwmb 算出初始速度，上面的初始值設定為60，找出速度對pwm的關係，藉此可知初始速度V_01, V_02
-    // 接著用return 回傳V_plus + V0，藉此算出兩輪車速。
+    // 1. use pwma, pwmb 算出初始速度，let Initial value = 60，find the coefficient between V1, V2, pwmValue，藉此可知初始速度V_01, V_02
+    // 2. return V_plus + V0，算出兩輪車速。
     
 double Speed_Cal(){
 
@@ -243,11 +242,10 @@ void Back_Check(double x, double y){
         analogWrite(pwmb, 40);
         Serial.println("Back");
     
-    }else {
-      
-          digitalWrite(as, LOW);
-          digitalWrite(bs, LOW);
-      }  
+    }else{ 
+        digitalWrite(as, LOW);
+        digitalWrite(bs, LOW);
+    }  
 }
 
 void Left_Right_check(double *D1, double *D2, double DR, double DL){
@@ -328,7 +326,7 @@ void loop() {
             Serial.println("Stop");
             Back_Check(distance1, distance2);
         
-        } else {
+        }else{
 
             times += 1;
             digitalWrite (af, HIGH);
@@ -351,14 +349,13 @@ void loop() {
             double distanceR = pingR();            
             Left_Right_check(&distance1, &distance2, distanceR, distanceL);
             
-          }
+        }
           
         delay(inter_time);
 
-    } else{
-          
-          digitalWrite(af, LOW);
-          digitalWrite(bf, LOW);    
-      } 
+    }else{          
+        digitalWrite(af, LOW);
+        digitalWrite(bf, LOW);    
+    } 
 
 }
