@@ -22,7 +22,7 @@ int pwma = 4;
 int pwmb = 3;
 
 const int inter_time = 500;
-int time = 0;
+int times = 0;
 int data = 1;
 
 double distance1;
@@ -44,6 +44,10 @@ float V2_plus;
 
 int Pa;
 int Pb;
+double AVGPa = 0;
+double AVGPb = 0;
+double toPa = 0;
+double toPb = 0;
 
 // 開關相關腳位及變數
 boolean state = false;
@@ -92,8 +96,8 @@ double ping1() {
     delayMicroseconds(10);   //持續5微秒
     digitalWrite(trigPin1 ,LOW);
     distance1 = pulseIn(echoPin1 ,HIGH) / 58.0;
-    if (distance1 >= 350){
-      return 350  ;  // 換算成 cm 並傳回
+    if (distance1 >= 250){
+      return 250;  // 換算成 cm 並傳回
     }  else return  (distance1);
 }
 
@@ -103,8 +107,8 @@ double ping2() {
     delayMicroseconds(10);   //持續5微秒
     digitalWrite(trigPin2 ,LOW);
     distance2 = pulseIn(echoPin2 ,HIGH) / 58.0;
-    if (distance2 >= 350){
-      return 350  ;  // 換算成 cm 並傳回
+    if (distance2 >= 250){
+      return 250;  // 換算成 cm 並傳回
     }  else return  (distance2);
 }
 
@@ -136,7 +140,6 @@ double angle_data(float x, float y){
     ANG2 = acos((pow(y, 2) + pow(trigBetween, 2) - pow(x, 2)) / (2 * y * trigBetween)) * 180 / PI ;
 
     distance3 = sqrt(pow(y, 2) + pow((trigBetween / 2), 2) - 2 * y * (trigBetween / 2) * cos(ANG2 / 180 * PI));
-
     ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(x, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
 
     //  Serial.println("ANG3(未修正) = " + String(ANG3));
@@ -146,7 +149,7 @@ double angle_data(float x, float y){
     if (ANG3 >= 90){
         ANG3 = ANG3 - 90;
         omega = ANG3 * PI / 180 / T_Catch_up;
-    } else{
+    }else{
         ANG3 = 90 - ANG3;
         omega = ANG3 * PI / 180 / T_Catch_up * (-1);
     }
@@ -167,12 +170,12 @@ double angle_data(float x, float y){
     Serial.println("V2_plus = " + String(V2_plus) + "(cm/s)");
     */
 }
-    // 這邊要用pwma, pwmb 算出初始速度，上面的初始值設定為60，找出速度對pwm的關係，藉此可知初始速度V_01, V_02
-    // 接著用return 回傳V_plus + V0，藉此算出兩輪車速。
+    // 1. use pwma, pwmb 算出初始速度，let Initial value = 60，find the coefficient between V1, V2, pwmValue，藉此可知初始速度V_01, V_02
+    // 2. return V_plus + V0，算出兩輪車速。
     
 double Speed_Cal(){
 
-    float VToPwm = 1.1;
+    float VToPwm = 1.0;
     V0 = distance3 / T_Catch_up;
     
     float V1 = V0 + V1_plus;
@@ -184,34 +187,36 @@ double Speed_Cal(){
     
     Pa = V2 * VToPwm;
     Pb = V1 * VToPwm;
-    if (Pa > 150){
-        Pa = 150;
+    if (Pa > 80){
+        Pa = 80;
     }
-    if (Pb > 150){
-        Pb = 150;
+    if (Pb > 80){
+        Pb = 80;
     }
     
     Serial.println("Pa = " + String(Pa));
     Serial.println("Pb = " + String(Pb));
-
-    analogWrite(pwma, Pa);
+    digitalWrite (af, HIGH);
+    digitalWrite (bf, HIGH);
+    analogWrite(pwma, (Pa + 7));
     analogWrite(pwmb, Pb);    
 
 }
 
+//-------------------------------Find_Someone------------------------------------
 double Find_Someone(double lastD1, double lastD2){
     Serial.println("search");
 
-    if (lastD1 >= lastD2){
+    if (lastD1 > lastD2){
       
         Pa = 0;
-        Pb = 30;
+        Pb = 25;
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
         
     }else {
       
-        Pa = 37;
+        Pa = 25;
         Pb = 0;
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
@@ -233,20 +238,19 @@ void Back_Check(double x, double y){
       
         digitalWrite(as, HIGH);
         digitalWrite(bs, HIGH);
-        analogWrite(pwma, 57);
-        analogWrite(pwmb, 50);
+        analogWrite(pwma, 47);
+        analogWrite(pwmb, 40);
         Serial.println("Back");
     
-    }else {
-      
-          digitalWrite(as, LOW);
-          digitalWrite(bs, LOW);
-      }  
+    }else{ 
+        digitalWrite(as, LOW);
+        digitalWrite(bs, LOW);
+    }  
 }
 
 void Left_Right_check(double *D1, double *D2, double DR, double DL){
     
-    if(DR <= 20 && Pa <= Pb){
+    if(DR <= 35 && Pa <= Pb){
         Pa = Pb + 15;
         Serial.println("--------------Turn left Fixing---------------");
         Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
@@ -254,13 +258,37 @@ void Left_Right_check(double *D1, double *D2, double DR, double DL){
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
     }
-    if(DL <= 20 && Pb <= Pa){
+    if(DL <= 35 && Pb <= Pa){
         Pb = Pa + 15;
         Serial.println("--------------Turn right Fixing-------------");
         Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
     }
+}
+
+void Rush_Check(int Pa, int Pb){
+
+    Serial.println("--------------RUSH CHECK-------------");
+    int LastPa = Pa;
+    int LastPb = Pb;
+    toPa += Pa;
+    toPb += Pb;
+    AVGPa = toPa / times;
+    AVGPb = toPb / times;
+    Serial.println("次數" + String(times));
+    Serial.println("AVGPa = " + String(AVGPa) + " - " + "AVGPb = " + String(AVGPb));
+    /*
+    double AVGPaa = AVGPa - 30;
+    double AVGPbb = AVGPb - 30;
+    */
+    //    Try it 
+    if (LastPa > (AVGPa - 30) || LastPb > (AVGPb - 30)){
+        Pa = AVGPa;
+        Pb = AVGPb;
+    }
+    analogWrite(pwma, (Pa + 7));
+    analogWrite(pwmb, Pb);
 }
 
 //-----------------------------LoopIsHere----------------------------------------------------------------
@@ -287,21 +315,26 @@ void loop() {
 
 
         //  控制馬達的轉動方式放在這
-        if (distance1 <= 50  ||  distance2 <= 50){
-          
+        if (distance1 <= 40  ||  distance2 <= 40){
+            /*
+            if (distance1 == 0 || distance2 == 0){
+                Find_Someone(distance1, distance2);
+            }
+            */
             digitalWrite (af, LOW); 
             digitalWrite (bf, LOW);
             Serial.println("Stop");
             Back_Check(distance1, distance2);
         
-        } else {
+        }else{
 
+            times += 1;
             digitalWrite (af, HIGH);
             digitalWrite (bf, HIGH);
 
             distance4 = abs(distance1 - distance2);
             
-            while (distance4 > 20){
+            while (distance4 > trigBetween){
               
                 Find_Someone(distance1, distance2);
                 
@@ -309,20 +342,20 @@ void loop() {
             
             angle_data(distance1, distance2);
             Speed_Cal();
+            //  Rush_Check(Pa, Pb);
 
             //  左右距離確認
             double distanceL = pingL();
             double distanceR = pingR();            
             Left_Right_check(&distance1, &distance2, distanceR, distanceL);
             
-          }
+        }
           
-        delay(300);
+        delay(inter_time);
 
-    } else{
-          
-          digitalWrite(af, LOW);
-          digitalWrite(bf, LOW);    
-      } 
+    }else{          
+        digitalWrite(af, LOW);
+        digitalWrite(bf, LOW);    
+    } 
 
-}         
+}
