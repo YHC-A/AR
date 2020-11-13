@@ -288,12 +288,14 @@ void Rush_Check(int Pa, int Pb){
     minus 30 just for savty
     */
     //    Try it 
+    /*
     if (LastPa > (AVGPa - 30) || LastPb > (AVGPb - 30)){
         Pa = AVGPa;
         Pb = AVGPb;
     }
     analogWrite(pwma, (Pa + 7));
     analogWrite(pwmb, Pb);
+  */
 }
 
 //-----------------------------------------------------------LoopIsHere---------------------------------------------------------------------
@@ -358,6 +360,7 @@ void loop() {
             double distanceL = pingL();
             double distanceR = pingR();            
             Left_Right_check(&distance1, &distance2, distanceR, distanceL);
+            Rush_Check(Pa, Pb);
             
         }
           
