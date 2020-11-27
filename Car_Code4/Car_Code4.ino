@@ -334,6 +334,7 @@ void loop() {
             digitalWrite (bf, LOW);
             Serial.println("Stop");
             Back_Check(distance1, distance2);
+            times += 1;
         
         }else{
 
