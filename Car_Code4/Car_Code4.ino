@@ -207,7 +207,7 @@ double Speed_Cal(){
 //-------------------------------------------------------------Find_Someone------------------------------------------------------------
 
 double Find_Someone(double lastD1, double lastD2){
-    Serial.println("search");
+    Serial.println("-------------search-------------");
 
     if (lastD1 > lastD2){
       
