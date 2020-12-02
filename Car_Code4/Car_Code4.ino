@@ -176,7 +176,7 @@ double angle_data(float x, float y){
     
 double Speed_Cal(){
 
-    float VToPwm = 1.0;
+    float VToPwm = 1.2;
     V0 = distance3 / T_Catch_up;
     
     float V1 = V0 + V1_plus;
@@ -212,13 +212,13 @@ double Find_Someone(double lastD1, double lastD2){
     if (lastD1 > lastD2){
       
         Pa = 0;
-        Pb = 25;
+        Pb = 40;
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
         
     }else {
       
-        Pa = 25;
+        Pa = 40;
         Pb = 0;
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
@@ -252,7 +252,7 @@ void Back_Check(double x, double y){
 
 void Left_Right_check(double *D1, double *D2, double DR, double DL){
     
-    if(DR <= 35 && Pa <= Pb){
+    if(DR <= 30 && Pa <= Pb){
         Pa = Pb + 15;
         Serial.println("--------------Turn left Fixing---------------");
         Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
@@ -260,7 +260,7 @@ void Left_Right_check(double *D1, double *D2, double DR, double DL){
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
     }
-    if(DL <= 35 && Pb <= Pa){
+    if(DL <= 30 && Pb <= Pa){
         Pb = Pa + 15;
         Serial.println("--------------Turn right Fixing-------------");
         Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
@@ -370,6 +370,7 @@ void loop() {
     }else{          
         digitalWrite(af, LOW);
         digitalWrite(bf, LOW);    
+
     } 
 
 }
