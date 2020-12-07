@@ -30,10 +30,13 @@ double distance1;
 double distance2;
 double distance3;
 double distance4;
+double TODX = 0;
+double TODY = 0;
 
 double ANG1;
 double ANG2;
 double ANG3;
+double ANGD = 90;
 
 double trigBetween = 20;
 double wheelBetween = 50;
@@ -142,7 +145,9 @@ double angle_data(float x, float y){
 
     distance3 = sqrt(pow(y, 2) + pow((trigBetween / 2), 2) - 2 * y * (trigBetween / 2) * cos(ANG2 / 180 * PI));
     ANG3 = acos((pow(distance3, 2) + pow((trigBetween / 2), 2) - pow(x, 2)) / (2 * distance3 * (trigBetween / 2))) * 180 / PI ;
-
+    
+    ANGD = ANGD + (ANG3 - 90);
+    
     //  Serial.println("ANG3(未修正) = " + String(ANG3));
     
     float omega;
@@ -293,6 +298,10 @@ void Rush_Check(int Pa, int Pb){
         Pa = AVGPa;
         Pb = AVGPb;
     }
+    if (ANGD >= 40){
+        Pa = AVGPa;
+        Pb = AVGPb;
+    }
     analogWrite(pwma, (Pa + 7));
     analogWrite(pwmb, Pb);
   */
@@ -316,6 +325,9 @@ void loop() {
         String str1 ="";
         distance1  = ping1();
         distance2  = ping2();
+        
+        TODX += distance3 * cos((ANG3 - ANGD)/ 180 * PI);
+        TODY += distance3 * sin((ANG3 - ANGD)/ 180 * PI);
         
         str1 = " Distance1=" + String(distance1) + "cm , Distance2=" + String(distance2) + " cm" ;
         Serial.println(str1) ;
