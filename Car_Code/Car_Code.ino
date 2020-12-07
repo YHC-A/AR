@@ -1,4 +1,5 @@
-#include <Servo.h>
+//  #include <Servo.h>
+
 #include <Wire.h>
 
 const int trigPin1 = 30;
@@ -54,7 +55,7 @@ boolean state = false;
 boolean buttonUp = true;
 int SwitchPin = 31;
 
-//-----------------------------SetUpIsHere--------------------------------------------------------------
+//-----------------------------------------------SetUpIsHere--------------------------------------------------------------
 void setup() {
     Serial.begin(9600);
     /*
@@ -93,42 +94,42 @@ void setup() {
 
 double ping1() {
     digitalWrite(trigPin1 ,HIGH); //觸發腳位設定為高電位
-    delayMicroseconds(10);   //持續5微秒
+    delayMicroseconds(10);   //持續10微秒
     digitalWrite(trigPin1 ,LOW);
     distance1 = pulseIn(echoPin1 ,HIGH) / 58.0;
     if (distance1 >= 250){
-      return 250;  // 換算成 cm 並傳回
+      return 250;  // 換算成 cm 並傳回，可回傳英吋
     }  else return  (distance1);
 }
 
 
 double ping2() {
     digitalWrite(trigPin2 ,HIGH); //觸發腳位設定為高電位
-    delayMicroseconds(10);   //持續5微秒
+    delayMicroseconds(10);   //持續10微秒
     digitalWrite(trigPin2 ,LOW);
     distance2 = pulseIn(echoPin2 ,HIGH) / 58.0;
     if (distance2 >= 250){
-      return 250;  // 換算成 cm 並傳回
+      return 250;  // 換算成 cm 並傳回，可回傳英吋
     }  else return  (distance2);
 }
 
 double pingL() {
     digitalWrite(trigPin3 ,HIGH); //觸發腳位設定為高電位
-    delayMicroseconds(10);   //持續5微秒
+    delayMicroseconds(10);   //持續10微秒
     digitalWrite(trigPin3,LOW) ;
     double distanceL = pulseIn(echoPin3,HIGH) / 58.0;
     if (distanceL >= 350){
-      return 350  ;  // 換算成 cm 並傳回
+      return 350  ;  // 換算成 cm 並傳回，可回傳英吋
     }  else return  (distanceL);
 }
 
 double pingR() {
     digitalWrite(trigPin4 ,HIGH); //觸發腳位設定為高電位
-    delayMicroseconds(10);   //持續5微秒
+    delayMicroseconds(10);   //持續10微秒
     digitalWrite(trigPin4 ,LOW) ;
     double distanceR = pulseIn(echoPin4,HIGH) / 58.0;
     if (distanceR >= 350){
-      return 350  ;  // 換算成 cm 並傳回
+      return 350  ;  // 換算成 cm 並傳回，可回傳英吋
     }  else return  (distanceR);
 }
 
@@ -175,7 +176,7 @@ double angle_data(float x, float y){
     
 double Speed_Cal(){
 
-    float VToPwm = 1.0;
+    float VToPwm = 1.2;
     V0 = distance3 / T_Catch_up;
     
     float V1 = V0 + V1_plus;
@@ -183,7 +184,7 @@ double Speed_Cal(){
     Serial.println("V1 = " + String(V1));
     Serial.println("V2 = " + String(V2));
 
-    //  VToPwm是速度換PWM值得係數，此係數還待更加精準的測量
+    //  VToPwm is the coefficient change V to PWM, this value is changeable 
     
     Pa = V2 * VToPwm;
     Pb = V1 * VToPwm;
@@ -203,20 +204,21 @@ double Speed_Cal(){
 
 }
 
-//-------------------------------Find_Someone------------------------------------
+//-------------------------------------------------------------Find_Someone------------------------------------------------------------
+
 double Find_Someone(double lastD1, double lastD2){
-    Serial.println("search");
+    Serial.println("-------------search-------------");
 
     if (lastD1 > lastD2){
       
         Pa = 0;
-        Pb = 25;
+        Pb = 40;
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
         
     }else {
       
-        Pa = 25;
+        Pa = 40;
         Pb = 0;
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
@@ -250,7 +252,7 @@ void Back_Check(double x, double y){
 
 void Left_Right_check(double *D1, double *D2, double DR, double DL){
     
-    if(DR <= 35 && Pa <= Pb){
+    if(DR <= 30 && Pa <= Pb){
         Pa = Pb + 15;
         Serial.println("--------------Turn left Fixing---------------");
         Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
@@ -258,7 +260,7 @@ void Left_Right_check(double *D1, double *D2, double DR, double DL){
         analogWrite(pwma, Pa);
         analogWrite(pwmb, Pb);
     }
-    if(DL <= 35 && Pb <= Pa){
+    if(DL <= 30 && Pb <= Pa){
         Pb = Pa + 15;
         Serial.println("--------------Turn right Fixing-------------");
         Serial.println("New Pa - Pb= " + String(Pa) + "-" + String(Pb));
@@ -281,17 +283,22 @@ void Rush_Check(int Pa, int Pb){
     /*
     double AVGPaa = AVGPa - 30;
     double AVGPbb = AVGPb - 30;
+    
+    如下所述
+    minus 30 just for savty
     */
     //    Try it 
+    /*
     if (LastPa > (AVGPa - 30) || LastPb > (AVGPb - 30)){
         Pa = AVGPa;
         Pb = AVGPb;
     }
     analogWrite(pwma, (Pa + 7));
     analogWrite(pwmb, Pb);
+  */
 }
 
-//-----------------------------LoopIsHere----------------------------------------------------------------
+//-----------------------------------------------------------LoopIsHere---------------------------------------------------------------------
 
 void loop() {
   
@@ -315,6 +322,8 @@ void loop() {
 
 
         //  控制馬達的轉動方式放在這
+        //  最低限度  40
+        
         if (distance1 <= 40  ||  distance2 <= 40){
             /*
             if (distance1 == 0 || distance2 == 0){
@@ -325,6 +334,7 @@ void loop() {
             digitalWrite (bf, LOW);
             Serial.println("Stop");
             Back_Check(distance1, distance2);
+            times += 1;
         
         }else{
 
@@ -342,12 +352,16 @@ void loop() {
             
             angle_data(distance1, distance2);
             Speed_Cal();
+            
             //  Rush_Check(Pa, Pb);
 
             //  左右距離確認
+            //  可用於重點確認，但不見得有用
+            
             double distanceL = pingL();
             double distanceR = pingR();            
             Left_Right_check(&distance1, &distance2, distanceR, distanceL);
+            Rush_Check(Pa, Pb);
             
         }
           
@@ -356,6 +370,7 @@ void loop() {
     }else{          
         digitalWrite(af, LOW);
         digitalWrite(bf, LOW);    
+
     } 
 
 }
